@@ -9,7 +9,7 @@
     <version>2.7.4</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
-  <groupId>com.zinkworks</groupId>
+  <groupId>com</groupId>
   <artifactId>atm</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>atm</name>
