@@ -12,9 +12,10 @@ import com.atm.config.SecurityConfiguration;
 import com.atm.repository.AccountRepository;
 import com.atm.repository.domain.Account;
 import com.atm.repository.domain.Bill;
-import com.atm.util.JwtUtils;
+import io.github.gonguasp.jwt.service.JwtService;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,7 +29,7 @@ class OperationServiceTest {
   private static HttpServletRequest request;
   private static BillRepository billRepository;
   private static AccountRepository accountRepository;
-  private static JwtUtils jwtUtils;
+  private static JwtService jwtService;
   private static OperationService operationService;
 
   @BeforeAll
@@ -36,15 +37,17 @@ class OperationServiceTest {
     request = Mockito.mock(HttpServletRequest.class);
     billRepository = Mockito.mock(BillRepository.class);
     accountRepository = Mockito.mock(AccountRepository.class);
-    jwtUtils = Mockito.mock(JwtUtils.class);
-    operationService = new OperationService(request, billRepository, accountRepository, jwtUtils);
+    jwtService = Mockito.mock(JwtService.class);
+    operationService = new OperationService(request, billRepository, accountRepository, jwtService);
   }
 
   @Test
   void checkBalanceTest() {
     Mockito.when(request.getHeader(SecurityConfiguration.ACCESS_TOKEN)).thenReturn("test");
-    Mockito.when(jwtUtils.validateToken(Mockito.anyString())).thenReturn(
-        new Account(0, "0", "0", 100.0, 0.0));
+    Mockito.when(jwtService.extractClaim(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        Integer.valueOf(1));
+    Mockito.when(accountRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(
+        new Account(0, "0", "0", 100.0, 0.0)));
     Mockito.when(billRepository.findAll()).thenReturn(List.of(new Bill(0, 50.0, 2)));
     ResponseEntity<Map<String, Object>> response = operationService.checkBalance();
     assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -56,8 +59,10 @@ class OperationServiceTest {
   @SneakyThrows
   void doWithdrawalTest() {
     Mockito.when(request.getHeader(SecurityConfiguration.ACCESS_TOKEN)).thenReturn("test");
-    Mockito.when(jwtUtils.validateToken(Mockito.anyString())).thenReturn(
-        new Account(0, "0", "0", 100.0, 0.0));
+    Mockito.when(jwtService.extractClaim(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        Integer.valueOf(1));
+    Mockito.when(accountRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(
+        new Account(0, "0", "0", 100.0, 0.0)));
     Mockito.when(billRepository.findAll()).thenReturn(List.of(new Bill(0, 50.0, 2)));
     Mockito.when(billRepository.findAllByOrderByBillValueDesc()).thenReturn(List.of(
         new Bill(0, 50.0, 2)));
@@ -72,8 +77,10 @@ class OperationServiceTest {
   @SneakyThrows
   void doWithdrawalTestNotEnoughFundsException() {
     Mockito.when(request.getHeader(SecurityConfiguration.ACCESS_TOKEN)).thenReturn("test");
-    Mockito.when(jwtUtils.validateToken(Mockito.anyString())).thenReturn(
-        new Account(0, "0", "0", 100.0, 0.0));
+    Mockito.when(jwtService.extractClaim(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        Integer.valueOf(1));
+    Mockito.when(accountRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(
+        new Account(0, "0", "0", 100.0, 0.0)));
     Mockito.when(billRepository.findAll()).thenReturn(List.of(new Bill(0, 50.0, 2)));
     Mockito.when(billRepository.findAllByOrderByBillValueDesc()).thenReturn(List.of(
         new Bill(0, 50.0, 2)));
@@ -86,8 +93,10 @@ class OperationServiceTest {
   @SneakyThrows
   void doWithdrawalTestNotEnoughBillsException() {
     Mockito.when(request.getHeader(SecurityConfiguration.ACCESS_TOKEN)).thenReturn("test");
-    Mockito.when(jwtUtils.validateToken(Mockito.anyString())).thenReturn(
-        new Account(0, "0", "0", 100.0, 0.0));
+    Mockito.when(jwtService.extractClaim(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        Integer.valueOf(1));
+    Mockito.when(accountRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(
+        new Account(0, "0", "0", 100.0, 0.0)));
     Mockito.when(billRepository.findAll()).thenReturn(List.of(new Bill(0, 50.0, 2)));
     Mockito.when(billRepository.findAllByOrderByBillValueDesc()).thenReturn(List.of(
         new Bill(0, 50.0, 2)));
@@ -100,8 +109,10 @@ class OperationServiceTest {
   @SneakyThrows
   void doWithdrawalTestNotEnoughMoneyException() {
     Mockito.when(request.getHeader(SecurityConfiguration.ACCESS_TOKEN)).thenReturn("test");
-    Mockito.when(jwtUtils.validateToken(Mockito.anyString())).thenReturn(
-        new Account(0, "0", "0", 100.0, 0.0));
+    Mockito.when(jwtService.extractClaim(Mockito.anyString(), Mockito.anyString())).thenReturn(
+        Integer.valueOf(1));
+    Mockito.when(accountRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(
+        new Account(0, "0", "0", 100.0, 0.0)));
     Mockito.when(billRepository.findAll()).thenReturn(List.of(new Bill(0, 50.0, 1)));
     Mockito.when(billRepository.findAllByOrderByBillValueDesc()).thenReturn(List.of(
         new Bill(0, 50.0, 2)));

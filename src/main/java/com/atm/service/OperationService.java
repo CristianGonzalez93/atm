@@ -1,6 +1,7 @@
 package com.atm.service;
 
 import com.atm.config.SecurityConfiguration;
+import com.atm.exception.InvalidCredentialsException;
 import com.atm.exception.NotEnoughBillsException;
 import com.atm.exception.NotEnoughCashException;
 import com.atm.exception.NotEnoughFundsException;
@@ -9,19 +10,19 @@ import com.atm.repository.AccountRepository;
 import com.atm.repository.BillRepository;
 import com.atm.repository.domain.Account;
 import com.atm.repository.domain.Bill;
-import com.atm.util.JwtUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.github.gonguasp.jwt.service.JwtService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -33,17 +34,16 @@ public class OperationService {
 
   private final HttpServletRequest request;
 
-  @Autowired
-  private BillRepository billRepository;
+  private final BillRepository billRepository;
 
-  @Autowired
-  private AccountRepository accountRepository;
+  private final AccountRepository accountRepository;
 
-  @Autowired
-  private JwtUtils jwtUtils;
+  private final JwtService jwtService;
+
+  public final static String USER_ID = "id";
 
   public ResponseEntity<Map<String, Object>> checkBalance() {
-    Account account = jwtUtils.validateToken(request.getHeader(SecurityConfiguration.ACCESS_TOKEN));
+    Account account = getAccountFromToken(request.getHeader(SecurityConfiguration.ACCESS_TOKEN));
     Map<String, Object> balance = new HashMap<>();
     balance.put("balance", account.getBalance());
     balance.put("max withdrawal", getCurrentMaxWithdrawal(account.getBalance()));
@@ -53,7 +53,7 @@ public class OperationService {
 
   public ResponseEntity<Map<String, Object>> doWithdrawal(Double withdrawal)
       throws NotEnoughCashException {
-    Account account = jwtUtils.validateToken(request.getHeader(SecurityConfiguration.ACCESS_TOKEN));
+    Account account = getAccountFromToken(request.getHeader(SecurityConfiguration.ACCESS_TOKEN));
     List<Bill> notes = new ArrayList<>();
     if (withdrawal > account.getBalance()) {
       throw new NotEnoughFundsException("It is not possible to do withdrawal of " + withdrawal +
@@ -72,6 +72,17 @@ public class OperationService {
     } else {
       throw new NotEnoughBillsException("It is not possible to do withdrawal of " + withdrawal +
           " because there are not enough bills in the ATM machine.");
+    }
+  }
+
+  private Account getAccountFromToken(String token) {
+    Optional<Account> accountOptional = accountRepository.findById(
+        Long.valueOf((Integer) jwtService.extractClaim(
+            token, USER_ID)));
+    if (accountOptional.isPresent()) {
+      return accountOptional.get();
+    } else {
+      throw new InvalidCredentialsException("Invalid credentials");
     }
   }
 

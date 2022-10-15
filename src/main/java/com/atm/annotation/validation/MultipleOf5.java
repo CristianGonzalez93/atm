@@ -14,7 +14,7 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 @Constraint(validatedBy = WithdrawalValidator.class)
 @Documented
-public @interface MultipleOf10 {
+public @interface MultipleOf5 {
 
   String message() default "{withdrawal.invalid}";
 

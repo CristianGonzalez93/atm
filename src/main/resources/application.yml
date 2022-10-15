@@ -13,3 +13,8 @@ spring:
 logging:
   level:
     root: INFO
+
+jwt:
+  password: secret2
+  expiration: 5
+  access-token: accessToken

@@ -1,8 +1,9 @@
 package com.atm.controller;
 
-import com.atm.annotation.validation.MultipleOf10;
+import com.atm.annotation.validation.MultipleOf5;
 import com.atm.exception.NotEnoughCashException;
 import com.atm.service.OperationService;
+import io.github.gonguasp.jwt.annotation.AccessTokenVerification;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +22,17 @@ public class OperationController {
   @Autowired
   private OperationService operationService;
 
+  @AccessTokenVerification
   @GetMapping("/check-balance")
   public ResponseEntity<Map<String, Object>> checkBalance() {
     return operationService.checkBalance();
   }
 
+  @AccessTokenVerification
   @PostMapping("/withdrawal/{withdrawal}")
   public ResponseEntity<Map<String, Object>> doWithdrawal(
       @PathVariable("withdrawal")
-      @MultipleOf10
+      @MultipleOf5
       Double withdrawal)
       throws NotEnoughCashException {
     return operationService.doWithdrawal(withdrawal);
